@@ -1,0 +1,22 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Your FastAPI app - change 'fastapi' to your docker service name
+  - job_name: "fastapi"
+    static_configs:
+      - targets: ["post:8001"]  # <-- change port if needed
+    metrics_path: "/metrics"
+    scrape_interval: 5s
+
+  # - job_name: "django"
+  #   static_configs:
+  #     - targets: ["user:8000"]  # <-- change port if needed
+  #   metrics_path: "/metrics"
+  #   scrape_interval: 5s
+
+  # Prometheus self-monitoring
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
