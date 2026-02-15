@@ -83,7 +83,7 @@ docker compose -f ./docker-compose.yml up
 docker compose -f docker-compose.monitoring.yml up
 ```
 
-### 5. Open Grafana
+### 4. Open Grafana
 - URL: http://localhost:3000
 - Login: admin / admin
 - Prometheus and Loki are auto-connected
