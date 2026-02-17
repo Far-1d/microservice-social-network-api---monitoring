@@ -14,26 +14,41 @@ scrape_configs:
       - host: unix:///var/run/docker.sock
         refresh_interval: 5s
     relabel_configs:
-      # Use the container name as the "service" label in Loki
       - source_labels: ["__meta_docker_container_name"]
         target_label: service
         regex: "/(.*)"
         replacement: "$1"
     pipeline_stages:
-      # Parse JSON logs from structlog
-      - json:
-          expressions:
-            level: level
-            event: event
-            user_id: user_id
-            ip: ip
-            path: path
-            method: method
-            status_code: status_code
-            duration_ms: duration_ms
-      # Add parsed fields as Loki labels for filtering
-      - labels:
-          level:
-          path:
-          method:
-          status_code:
+      - match:
+          selector: '{service=~".+"}'
+          stages:
+            - json:
+                expressions:
+                  level: level
+                  event: event
+                  user_id: user_id
+                  ip: ip
+                  path: path
+                  method: method
+                  status_code: status_code
+                  duration_ms: duration_ms
+                  logger: logger
+
+            # Normalize warning → warn for consistency
+            - template:
+                source: level
+                template: '{{ Replace .Value "warning" "warn" 1 }}'
+
+            # Drop /metrics logs
+            - drop:
+                source: path
+                expression: "^/metrics$"
+
+            # Add as labels
+            - labels:
+                level:
+                path:
+                method:
+                status_code:
+                logger:
+
